@@ -24,6 +24,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "GPS.h"
+#include "UART.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -68,7 +69,7 @@ static void MX_USART2_UART_Init(void);
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-
+	UART uart;
   /* USER CODE END 1 */
   
 
@@ -93,9 +94,7 @@ int main(void)
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
 
-  volatile int test = 0;
 
-  volatile int test2;
 
   /* USER CODE END 2 */
 
@@ -104,7 +103,10 @@ int main(void)
   while (1)
   {
 
-	test = generalProblemSolver();
+	if(generalProblemSolver())
+		HAL_UART_Transmit(&huart2, "Success!", 8, 500);
+	else
+		HAL_UART_Transmit(&huart2, "FAILED!", 7, 500);
 
     /* USER CODE END WHILE */
 

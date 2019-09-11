@@ -50,7 +50,7 @@ void twoJugsProblem(Problem *problem)
 	problem->nUsedElements = 2;
 	problem->initialState.element[0] = 0;
 	problem->initialState.element[1] = 0;
-	problem->goalState.element[0] = 8;
+	problem->goalState.element[0] = 2;
 	problem->goalState.element[1] = 0;
 	problem->nRules = 8;
 	problem->rules = rulesTwoJugs;
@@ -89,6 +89,21 @@ Node listElementAt(List *list, int element)
 	}
 
 	return temp;
+}
+
+bool listContains(List *list, Node comparisonNode)
+{
+	for(int iList = 0; iList < list->size; iList++)
+	{
+		Node listTempNode = listElementAt(list, iList);
+		if((comparisonNode.element[0] ==  listTempNode.element[0]) && (comparisonNode.element[1] == listTempNode.element[1]))
+		{
+			return true;
+		}
+
+	}
+
+	return false;
 }
 
 bool nodeIsGoal(Problem problem, Node N)
@@ -223,7 +238,7 @@ int generalProblemSolver(void)
 		 */
 		if(listIsEmpty(&OPEN))
 		{
-			int failed = -1;
+			int failed = 0;
 			return failed;
 		}
 
@@ -250,36 +265,13 @@ int generalProblemSolver(void)
 		 */
 		for(int ruleIterator = 1; ruleIterator <= problem.nRules; ruleIterator++)
 		{
-			Node tempNode = problem.rules(N, ruleIterator);
-			int duplicate = 0;
-			if(tempNode.element[0] != -1)
+			Node tempNode = problem.rules(N, ruleIterator); // Iterate through the 8 rules
+			if(tempNode.element[0] != -1) // -1 means that the node could not be expanded for the specific rule it checked
 			{
-				for(int iOpen = 0; (iOpen < OPEN.size) && OPEN.size > 0; iOpen++)
-				{
-					Node openTempNode = listElementAt(&OPEN, iOpen);
-					if((tempNode.element[0] ==  openTempNode.element[0]) && (tempNode.element[1] == openTempNode.element[1]))
-					{
-						duplicate++;
-						break;
-					}
-
-				}
-
-				for(int iClosed = 0; (iClosed < CLOSED.size) && CLOSED.size > 0; iClosed++)
-				{
-					Node closedTempNode = listElementAt(&CLOSED, iClosed);
-					if((tempNode.element[0] ==  closedTempNode.element[0]) && (tempNode.element[1] == closedTempNode.element[1]))
-					{
-						duplicate++;
-						break;
-					}
-				}
-
-				if(!duplicate)
+				if(!listContains(&OPEN, tempNode) && !listContains(&CLOSED, tempNode))
 				{
 					listAppend(&OPEN, tempNode);
 				}
-				duplicate = 0;
 			}
 		}
 

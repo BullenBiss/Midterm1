@@ -39,9 +39,11 @@
   Node listPopFront(List *list);
   bool listIsEmpty(List* list);
   Node listElementAt(List *list, int element);
+  bool listContains(List *list, Node comparisonNode);
 
   Node expandNode(Problem problem, Node open, Node closed, Node New);
   bool nodeIsGoal(Problem problem, Node N);
+
   Node rulesTwoJugs(Node N, int iCase);
   void twoJugsProblem(Problem *problem);
   int generalProblemSolver(void);
