@@ -44,16 +44,30 @@ Node listPopFront(List *list)
 	return temp;
 }
 
+Node listPopBack(List *list)
+{
+	Node temp;
+	temp.element[0] = -1;
+	if(list->pBuffBegin != list->pBuffEnd)
+	{
+		list->pBuffEnd--;
+		temp = *list->pBuffEnd;
+		list->size--;
+	}
+
+	return temp;
+}
 
 void twoJugsProblem(Problem *problem)
 {
-	problem->nUsedElements = 2;
+	problem->initialState.nUsedElements = 2;
 	problem->initialState.element[0] = 0;
 	problem->initialState.element[1] = 0;
 	problem->goalState.element[0] = 2;
 	problem->goalState.element[1] = 0;
 	problem->nRules = 8;
 	problem->rules = rulesTwoJugs;
+
 }
 
 bool listIsEmpty(List* list)
@@ -91,6 +105,19 @@ Node listElementAt(List *list, int element)
 	return temp;
 }
 
+Node listCompareAndRead(List *list, Node comparisonNode)
+{
+	for(int iList = 0; iList < list->size; iList++)
+	{
+		Node listTempNode = listElementAt(list, iList);
+		if((comparisonNode.element[0] ==  listTempNode.element[0]) && (comparisonNode.element[1] == listTempNode.element[1]))
+		{
+			return listTempNode;
+		}
+
+	}
+}
+
 bool listContains(List *list, Node comparisonNode)
 {
 	for(int iList = 0; iList < list->size; iList++)
@@ -108,18 +135,23 @@ bool listContains(List *list, Node comparisonNode)
 
 bool nodeIsGoal(Problem problem, Node N)
 {
-	for(int i = 0; i < problem.nUsedElements; i++)
+	int correct = 0;
+	for(int i = 0; i < N.nUsedElements; i++)
 	{
 		if(N.element[i] == problem.goalState.element[i])
 		{
-			return true;
-		}
-		else
-		{
-			return false;
+			correct++;
 		}
 	}
+
+	if(correct == N.nUsedElements)
+		return true;
+	else
+		return false;
+
 }
+
+
 
 Node rulesTwoJugs(Node N, int iCase)
 {
@@ -199,13 +231,63 @@ Node rulesTwoJugs(Node N, int iCase)
 	return N;
 }
 
-Node expandNode(Problem problem, Node open, Node closed, Node New)
+void addParent(Node *parent, Node*child)
 {
+	for(int i = 0; i < parent->nUsedElements; i++)
+	{
+		child->parentElement[i] = parent->element[i];
+	}
+}
+
+Node getParent(Node child)
+{
+	Node temp;
+	temp.nUsedElements = child.nUsedElements;
+	for(int i = 0; i < child.nUsedElements; i++)
+	{
+		temp.element[i] = child.parentElement[i];
+	}
+
+	return temp;
+}
+
+bool nodeIsSame(Node original, Node comparisonNode)
+{
+	int correct = 0;
+	for(int i = 0; i < original.nUsedElements; i++)
+	{
+		if(original.element[i] == comparisonNode.element[i])
+		{
+			correct++;
+		}
+	}
+
+	if(correct == original.nUsedElements)
+		return true;
+	else
+		return false;
+}
+
+void getSolutionPath(List *SOLUTION, List *CLOSED, Problem problem, Node N)
+{
+	Node solutionPathNode;
+	solutionPathNode = N;
+	listAppend(SOLUTION, solutionPathNode);
+
+	while(!nodeIsSame(solutionPathNode, problem.initialState))
+	{
+		solutionPathNode = getParent(solutionPathNode);
+		if(listContains(CLOSED, solutionPathNode))
+		{
+			solutionPathNode = listCompareAndRead(CLOSED, solutionPathNode);
+			listAppend(SOLUTION, solutionPathNode);
+		}
+	}
 
 }
 
 
-int generalProblemSolver(void)
+int generalProblemSolver(List* SOLUTION)
 {
 	Problem problem;
 	Node N;
@@ -213,7 +295,6 @@ int generalProblemSolver(void)
 
 	List OPEN;
 	listInit(&OPEN);
-
 	List NEW;
 	listInit(&NEW);
 
@@ -255,6 +336,7 @@ int generalProblemSolver(void)
 		 */
 		if(nodeIsGoal(problem, N))
 		{
+			getSolutionPath(SOLUTION, &CLOSED, problem, N);
 			int success = 1;
 			return success;
 		}
@@ -265,11 +347,12 @@ int generalProblemSolver(void)
 		 */
 		for(int ruleIterator = 1; ruleIterator <= problem.nRules; ruleIterator++)
 		{
-			Node tempNode = problem.rules(N, ruleIterator); // Iterate through the 8 rules
+			Node tempNode = problem.rules(N, ruleIterator); // Iterate through the 8 rules and return a viable expanded node
 			if(tempNode.element[0] != -1) // -1 means that the node could not be expanded for the specific rule it checked
 			{
-				if(!listContains(&OPEN, tempNode) && !listContains(&CLOSED, tempNode))
+				if(!listContains(&OPEN, tempNode) && !listContains(&CLOSED, tempNode)) //check if expanded node exists in the lists
 				{
+					addParent(&N, &tempNode);
 					listAppend(&OPEN, tempNode);
 				}
 			}

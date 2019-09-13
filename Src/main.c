@@ -70,6 +70,8 @@ int main(void)
 {
   /* USER CODE BEGIN 1 */
 	UART uart;
+	List solution;
+	char uartSend[10];
   /* USER CODE END 1 */
   
 
@@ -79,7 +81,7 @@ int main(void)
   HAL_Init();
 
   /* USER CODE BEGIN Init */
-
+  listInit(&solution);
   /* USER CODE END Init */
 
   /* Configure the system clock */
@@ -103,11 +105,23 @@ int main(void)
   while (1)
   {
 
-	if(generalProblemSolver())
-		HAL_UART_Transmit(&huart2, "Success!", 8, 500);
+	if(generalProblemSolver(&solution))
+	{
+		Node tempNode;
+		int listSize = solution.size;
+		for(int i = 0; i < listSize; i++)
+		{
+			tempNode = listPopBack(&solution);
+			sprintf(uartSend, "(%d,%d)", tempNode.element[0], tempNode.element[1]);
+			HAL_UART_Transmit(&huart2, uartSend, 5, 500);
+			HAL_UART_Transmit(&huart2, "\r\n", 2, 500);
+
+		}
+	}
 	else
 		HAL_UART_Transmit(&huart2, "FAILED!", 7, 500);
 
+	HAL_Delay(10000);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
