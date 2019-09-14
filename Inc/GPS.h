@@ -9,6 +9,8 @@
 #define GPS_H_
 #define BUFFSIZE 200
 #define NODE_ELEMENTS 10
+#define BREADTH_FIRST 1
+
 
 #include <stdio.h>
 #include "datatypes.h"
@@ -56,6 +58,8 @@ typedef struct {
   void getSolutionPath(List *SOLUTION, List *CLOSED, Problem problem, Node N);
 
   Node rulesTwoJugs(Node N, int iCase);
+  Node rulesManWolfGoatCabbage(Node N, int iCase);
+  void manWolfGoatCabbageProblem(Problem *problem);
   void twoJugsProblem(Problem *problem);
   int generalProblemSolver(List *SOLUTION);
 #endif /* GPS_H_ */

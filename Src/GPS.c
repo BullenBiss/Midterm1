@@ -7,152 +7,6 @@
 
 #include "GPS.h"
 
-
-void listInit(List *list)
-{
-	list->pBuffBegin = list->nodeBuff;
-	list->pBuffEnd = list->nodeBuff;
-	list->size = 0;
-}
-
-void listAppend(List *list, Node node)
-{
-	if(list->pBuffEnd > &list->nodeBuff[BUFFSIZE-1])
-	{
-		list->pBuffEnd = &list->nodeBuff[0];
-	}
-	*list->pBuffEnd = node;
-	list->pBuffEnd++;
-	list->size++;
-}
-
-Node listPopFront(List *list)
-{
-	Node temp;
-	temp.element[0] = -1;
-	if(list->pBuffBegin != list->pBuffEnd)
-	{
-		if(list->pBuffBegin > &list->nodeBuff[BUFFSIZE-1])
-		{
-			list->pBuffBegin = &list->nodeBuff[0];
-		}
-		temp = *list->pBuffBegin;
-		list->pBuffBegin++;
-		list->size--;
-	}
-
-	return temp;
-}
-
-Node listPopBack(List *list)
-{
-	Node temp;
-	temp.element[0] = -1;
-	if(list->pBuffBegin != list->pBuffEnd)
-	{
-		list->pBuffEnd--;
-		temp = *list->pBuffEnd;
-		list->size--;
-	}
-
-	return temp;
-}
-
-void twoJugsProblem(Problem *problem)
-{
-	problem->initialState.nUsedElements = 2;
-	problem->initialState.element[0] = 0;
-	problem->initialState.element[1] = 0;
-	problem->goalState.element[0] = 2;
-	problem->goalState.element[1] = 0;
-	problem->nRules = 8;
-	problem->rules = rulesTwoJugs;
-
-}
-
-bool listIsEmpty(List* list)
-{
-	if(list->pBuffBegin == list->pBuffEnd)
-	{
-		return true;
-	}
-	else
-	{
-		return false;
-	}
-}
-
-Node listElementAt(List *list, int element)
-{
-	Node temp;
-	Node *pTemp;
-	pTemp = list->pBuffBegin;
-	temp.element[0] = -1;
-	if(list->pBuffBegin != list->pBuffEnd)
-	{
-		for(int i = 0; i < element; i++)
-		{
-			list->pBuffBegin++;
-			if(list->pBuffBegin > &list->nodeBuff[BUFFSIZE-1])
-			{
-				list->pBuffBegin = &list->nodeBuff[0];
-			}
-		}
-		temp = *list->pBuffBegin;
-		list->pBuffBegin = pTemp;
-	}
-
-	return temp;
-}
-
-Node listCompareAndRead(List *list, Node comparisonNode)
-{
-	for(int iList = 0; iList < list->size; iList++)
-	{
-		Node listTempNode = listElementAt(list, iList);
-		if((comparisonNode.element[0] ==  listTempNode.element[0]) && (comparisonNode.element[1] == listTempNode.element[1]))
-		{
-			return listTempNode;
-		}
-
-	}
-}
-
-bool listContains(List *list, Node comparisonNode)
-{
-	for(int iList = 0; iList < list->size; iList++)
-	{
-		Node listTempNode = listElementAt(list, iList);
-		if((comparisonNode.element[0] ==  listTempNode.element[0]) && (comparisonNode.element[1] == listTempNode.element[1]))
-		{
-			return true;
-		}
-
-	}
-
-	return false;
-}
-
-bool nodeIsGoal(Problem problem, Node N)
-{
-	int correct = 0;
-	for(int i = 0; i < N.nUsedElements; i++)
-	{
-		if(N.element[i] == problem.goalState.element[i])
-		{
-			correct++;
-		}
-	}
-
-	if(correct == N.nUsedElements)
-		return true;
-	else
-		return false;
-
-}
-
-
-
 Node rulesTwoJugs(Node N, int iCase)
 {
 	switch(iCase)
@@ -231,6 +85,237 @@ Node rulesTwoJugs(Node N, int iCase)
 	return N;
 }
 
+void twoJugsProblem(Problem *problem)
+{
+	problem->initialState.nUsedElements = 2;
+	problem->initialState.element[0] = 0;
+	problem->initialState.element[1] = 0;
+	problem->goalState.element[0] = 2;
+	problem->goalState.element[1] = 0;
+	problem->nRules = 8;
+	problem->rules = rulesTwoJugs;
+
+}
+
+
+
+Node rulesManWolfGoatCabbage(Node N, int iCase)
+{
+	// The order goes (Man, wolf, goat, cabbage)
+	// 0 = starting side of the river
+	// 1 = opposite side of the river
+	switch(iCase)
+	{
+	case 1:
+		if((N.element[1] != N.element[2]) && // Move man alone
+		   (N.element[2] != N.element[3]))
+		{
+			N.element[0] = !N.element[0];
+			return N;
+		}
+		break;
+
+	case 2:
+		if(N.element[2] != N.element[3] &&  // Move wolf
+		   N.element[0] == N.element[1])
+		{
+			N.element[0] = !N.element[0];
+			N.element[1] = !N.element[1];
+
+			return N;
+		}
+		break;
+
+	case 3:
+		if(N.element[0] == N.element[2])  // Move goat
+		{
+			N.element[0] = !N.element[0];
+			N.element[2] = !N.element[2];
+
+			return N;
+		}
+		break;
+
+	case 4:
+		if(N.element[1] != N.element[2] &&  // Move cabbage
+		   N.element[0] == N.element[3])
+		{
+			N.element[0] = !N.element[0];
+			N.element[3] = !N.element[3];
+
+			return N;
+		}
+		break;
+	}
+
+	N.element[0] = -1;
+	return N;
+}
+void manWolfGoatCabbageProblem(Problem *problem)
+{
+	problem->initialState.nUsedElements = 4;
+	problem->initialState.element[0] = 0;
+	problem->initialState.element[1] = 0;
+	problem->initialState.element[2] = 0;
+	problem->initialState.element[3] = 0;
+
+	problem->goalState.element[0] = 1;
+	problem->goalState.element[1] = 1;
+	problem->goalState.element[2] = 1;
+	problem->goalState.element[3] = 1;
+	problem->nRules = 4;
+	problem->rules = rulesManWolfGoatCabbage;
+
+}
+
+void listInit(List *list)
+{
+	list->pBuffBegin = list->nodeBuff;
+	list->pBuffEnd = list->nodeBuff;
+	list->size = 0;
+}
+
+void listAppend(List *list, Node node)
+{
+	if(list->pBuffEnd > &list->nodeBuff[BUFFSIZE-1])
+	{
+		list->pBuffEnd = &list->nodeBuff[0];
+	}
+	*list->pBuffEnd = node;
+	list->pBuffEnd++;
+	list->size++;
+}
+
+Node listPopFront(List *list)
+{
+	Node temp;
+	temp.element[0] = -1;
+	if(list->pBuffBegin != list->pBuffEnd)
+	{
+		if(list->pBuffBegin > &list->nodeBuff[BUFFSIZE-1])
+		{
+			list->pBuffBegin = &list->nodeBuff[0];
+		}
+		temp = *list->pBuffBegin;
+		list->pBuffBegin++;
+		list->size--;
+	}
+
+	return temp;
+}
+
+Node listPopBack(List *list)
+{
+	Node temp;
+	temp.element[0] = -1;
+	if(list->pBuffBegin != list->pBuffEnd)
+	{
+		list->pBuffEnd--;
+		temp = *list->pBuffEnd;
+		list->size--;
+	}
+
+	return temp;
+}
+
+
+bool listIsEmpty(List* list)
+{
+	if(list->pBuffBegin == list->pBuffEnd)
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+
+Node listElementAt(List *list, int element)
+{
+	Node temp;
+	Node *pTemp;
+	pTemp = list->pBuffBegin;
+	temp.element[0] = -1;
+	if(list->pBuffBegin != list->pBuffEnd)
+	{
+		for(int i = 0; i < element; i++)
+		{
+			list->pBuffBegin++;
+			if(list->pBuffBegin > &list->nodeBuff[BUFFSIZE-1])
+			{
+				list->pBuffBegin = &list->nodeBuff[0];
+			}
+		}
+		temp = *list->pBuffBegin;
+		list->pBuffBegin = pTemp;
+	}
+
+	return temp;
+}
+
+Node listCompareAndRead(List *list, Node comparisonNode)
+{
+	for(int iList = 0; iList < list->size; iList++)
+	{
+		Node listTempNode = listElementAt(list, iList);
+		int correct = 0;
+
+		for(int i = 0; i < comparisonNode.nUsedElements; i++)
+		{
+			if(comparisonNode.element[i] == listTempNode.element[i])
+			{
+				correct++;
+			}
+		}
+		if(correct == comparisonNode.nUsedElements)
+		{
+			return listTempNode;
+		}
+
+	}
+}
+
+bool listContains(List *list, Node comparisonNode)
+{
+	for(int iList = 0; iList < list->size; iList++)
+	{
+		Node listTempNode = listElementAt(list, iList);
+		int correct = 0;
+
+		for(int i = 0; i < comparisonNode.nUsedElements; i++)
+		{
+			if(comparisonNode.element[i] == listTempNode.element[i])
+			{
+				correct++;
+			}
+		}
+		if(correct == comparisonNode.nUsedElements)
+			return true;
+	}
+
+	return false;
+}
+
+bool nodeIsGoal(Problem problem, Node N)
+{
+	int correct = 0;
+	for(int i = 0; i < N.nUsedElements; i++)
+	{
+		if(N.element[i] == problem.goalState.element[i])
+		{
+			correct++;
+		}
+	}
+
+	if(correct == N.nUsedElements)
+		return true;
+	else
+		return false;
+
+}
+
+
 void addParent(Node *parent, Node*child)
 {
 	for(int i = 0; i < parent->nUsedElements; i++)
@@ -291,7 +376,8 @@ int generalProblemSolver(List* SOLUTION)
 {
 	Problem problem;
 	Node N;
-	twoJugsProblem(&problem);
+	//twoJugsProblem(&problem);
+	manWolfGoatCabbageProblem(&problem);
 
 	List OPEN;
 	listInit(&OPEN);
@@ -328,7 +414,9 @@ int generalProblemSolver(List* SOLUTION)
 		 * 4. Select the first node N in OPEN. Remove N from OPEN and place it in CLOSED.
 		 */
 		N = listPopFront(&OPEN);
+		//N = listPopBack(&OPEN);
 		listAppend(&CLOSED, N);
+
 
 		/*
 		 * 5. If N represents a goal state, finish with success.
@@ -340,6 +428,7 @@ int generalProblemSolver(List* SOLUTION)
 			int success = 1;
 			return success;
 		}
+
 
 		/*
 		 * 6. Expand N, i.e. use the rules to find a set, NEW, of nodes that we can reach from N.

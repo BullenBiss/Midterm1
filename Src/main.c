@@ -109,11 +109,13 @@ int main(void)
 	{
 		Node tempNode;
 		int listSize = solution.size;
+		HAL_UART_Transmit(&huart2, "Solution found!\r\n", 17, 500);
 		for(int i = 0; i < listSize; i++)
 		{
 			tempNode = listPopBack(&solution);
-			sprintf(uartSend, "(%d,%d)", tempNode.element[0], tempNode.element[1]);
-			HAL_UART_Transmit(&huart2, uartSend, 5, 500);
+			//sprintf(uartSend, "(%d,%d)", tempNode.element[0], tempNode.element[1]);
+			sprintf(uartSend, "(%d,%d,%d,%d)", tempNode.element[0], tempNode.element[1], tempNode.element[2], tempNode.element[3]);
+			HAL_UART_Transmit(&huart2, uartSend, 9, 500);
 			HAL_UART_Transmit(&huart2, "\r\n", 2, 500);
 
 		}
