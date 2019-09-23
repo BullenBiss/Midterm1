@@ -110,14 +110,17 @@ int main(void)
 		Node tempNode;
 		int listSize = solution.size;
 		HAL_UART_Transmit(&huart2, "Solution found!\r\n", 17, 500);
+		blinkLEDS();
+		HAL_Delay(500);
 		for(int i = 0; i < listSize; i++)
 		{
+			HAL_Delay(1000);
 			tempNode = listPopBack(&solution);
-			//sprintf(uartSend, "(%d,%d)", tempNode.element[0], tempNode.element[1]);
-			sprintf(uartSend, "(%d,%d,%d,%d)", tempNode.element[0], tempNode.element[1], tempNode.element[2], tempNode.element[3]);
-			HAL_UART_Transmit(&huart2, uartSend, 9, 500);
+			sendToLED(tempNode);
+			sprintf(uartSend, "(%d,%d)", tempNode.element[0], tempNode.element[1]);
+			//sprintf(uartSend, "(%d,%d,%d,%d)", tempNode.element[0], tempNode.element[1], tempNode.element[2], tempNode.element[3]);
+			HAL_UART_Transmit(&huart2, uartSend, 5, 500);
 			HAL_UART_Transmit(&huart2, "\r\n", 2, 500);
-
 		}
 	}
 	else
@@ -209,9 +212,24 @@ static void MX_USART2_UART_Init(void)
   */
 static void MX_GPIO_Init(void)
 {
+  GPIO_InitTypeDef GPIO_InitStruct = {0};
 
   /* GPIO Ports Clock Enable */
+  __HAL_RCC_GPIOC_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOC, JugOne0_Pin|JugOne1_Pin|JugOne2_Pin|JugOne3_Pin 
+                          |JugTow0_Pin|JugTwo1_Pin|JugTwo2_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pins : JugOne0_Pin JugOne1_Pin JugOne2_Pin JugOne3_Pin 
+                           JugTow0_Pin JugTwo1_Pin JugTwo2_Pin */
+  GPIO_InitStruct.Pin = JugOne0_Pin|JugOne1_Pin|JugOne2_Pin|JugOne3_Pin 
+                          |JugTow0_Pin|JugTwo1_Pin|JugTwo2_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_PULLDOWN;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
 }
 

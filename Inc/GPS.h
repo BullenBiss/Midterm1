@@ -11,9 +11,24 @@
 #define NODE_ELEMENTS 10
 #define BREADTH_FIRST 1
 
+#define JugOne0_Pin GPIO_PIN_0
+#define JugOne0_GPIO_Port GPIOC
+#define JugOne1_Pin GPIO_PIN_1
+#define JugOne1_GPIO_Port GPIOC
+#define JugOne2_Pin GPIO_PIN_2
+#define JugOne2_GPIO_Port GPIOC
+#define JugOne3_Pin GPIO_PIN_3
+#define JugOne3_GPIO_Port GPIOC
+#define JugTow0_Pin GPIO_PIN_4
+#define JugTow0_GPIO_Port GPIOC
+#define JugTwo1_Pin GPIO_PIN_5
+#define JugTwo1_GPIO_Port GPIOC
+#define JugTwo2_Pin GPIO_PIN_6
+#define JugTwo2_GPIO_Port GPIOC
 
 #include <stdio.h>
 #include "datatypes.h"
+#include "stm32f4xx_hal.h"
 
 
 
@@ -22,8 +37,6 @@ typedef struct {
 	  int parentElement[10];
 	  int nUsedElements;
   }Node;
-
-
 
   typedef struct List{
   	Node nodeBuff[BUFFSIZE];
@@ -62,4 +75,9 @@ typedef struct {
   void manWolfGoatCabbageProblem(Problem *problem);
   void twoJugsProblem(Problem *problem);
   int generalProblemSolver(List *SOLUTION);
+
+  void sendToLED(Node node);
+  void resetLed(void);
+  void showSolutionOnLED(Node );
+  void blinkLEDS(void);
 #endif /* GPS_H_ */

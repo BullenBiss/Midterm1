@@ -7,6 +7,9 @@
 
 #include "GPS.h"
 
+uint16_t jugOne[4] = {JugOne0_Pin, JugOne1_Pin, JugOne2_Pin, JugOne3_Pin};
+uint16_t jugTwo[3] = {JugTow0_Pin, JugTwo1_Pin, JugTwo2_Pin};
+
 Node rulesTwoJugs(Node N, int iCase)
 {
 	switch(iCase)
@@ -90,6 +93,7 @@ void twoJugsProblem(Problem *problem)
 	problem->initialState.nUsedElements = 2;
 	problem->initialState.element[0] = 0;
 	problem->initialState.element[1] = 0;
+
 	problem->goalState.element[0] = 2;
 	problem->goalState.element[1] = 0;
 	problem->nRules = 8;
@@ -371,13 +375,56 @@ void getSolutionPath(List *SOLUTION, List *CLOSED, Problem problem, Node N)
 
 }
 
+void sendToLED(Node node)
+{
+	resetLed();
+	for(int i = 0; i < node.element[0]; i++)
+	{
+		HAL_GPIO_WritePin(JugOne0_GPIO_Port, jugOne[i], 1);
+	}
+
+	for(int j = 0; j < node.element[1]; j++)
+	{
+		HAL_GPIO_WritePin(JugOne0_GPIO_Port, jugTwo[j], 1);
+	}
+
+}
+
+void resetLed(void)
+{
+	for(int i = 0; i < 4; i++)
+	{
+		HAL_GPIO_WritePin(JugOne0_GPIO_Port, jugOne[i], 0);
+	}
+	for(int j = 0; j < 3; j++)
+	{
+		HAL_GPIO_WritePin(JugOne0_GPIO_Port, jugTwo[j], 0);
+	}
+}
+
+void blinkLEDS(void)
+{
+	resetLed();
+	for(int times = 0; times < 6; times++)
+	{
+		for(int i = 0; i < 4; i++)
+		{
+			HAL_GPIO_TogglePin(JugOne0_GPIO_Port, jugOne[i]);
+		}
+		for(int j = 0; j < 3; j++)
+		{
+			HAL_GPIO_TogglePin(JugOne0_GPIO_Port, jugTwo[j]);
+		}
+		HAL_Delay(400);
+	}
+}
 
 int generalProblemSolver(List* SOLUTION)
 {
 	Problem problem;
 	Node N;
-	//twoJugsProblem(&problem);
-	manWolfGoatCabbageProblem(&problem);
+	twoJugsProblem(&problem);
+	//manWolfGoatCabbageProblem(&problem);
 
 	List OPEN;
 	listInit(&OPEN);
@@ -413,8 +460,8 @@ int generalProblemSolver(List* SOLUTION)
 		/*
 		 * 4. Select the first node N in OPEN. Remove N from OPEN and place it in CLOSED.
 		 */
-		N = listPopFront(&OPEN);
-		//N = listPopBack(&OPEN);
+		//N = listPopFront(&OPEN);
+		N = listPopBack(&OPEN);
 		listAppend(&CLOSED, N);
 
 
@@ -424,6 +471,7 @@ int generalProblemSolver(List* SOLUTION)
 		 */
 		if(nodeIsGoal(problem, N))
 		{
+			sendToLED(N);
 			getSolutionPath(SOLUTION, &CLOSED, problem, N);
 			int success = 1;
 			return success;
@@ -436,23 +484,25 @@ int generalProblemSolver(List* SOLUTION)
 		 */
 		for(int ruleIterator = 1; ruleIterator <= problem.nRules; ruleIterator++)
 		{
-			Node tempNode = problem.rules(N, ruleIterator); // Iterate through the 8 rules and return a viable expanded node
-			if(tempNode.element[0] != -1) // -1 means that the node could not be expanded for the specific rule it checked
+			// Iterate through the rules and return a viable expanded node
+			Node NEW = problem.rules(N, ruleIterator);
+
+			// -1 means that the node could not be expanded for the specific rule it checked
+			if(NEW.element[0] != -1)
 			{
-				if(!listContains(&OPEN, tempNode) && !listContains(&CLOSED, tempNode)) //check if expanded node exists in the lists
+				//check if expanded node exists in the lists
+				if(!listContains(&OPEN, NEW) && !listContains(&CLOSED, NEW))
 				{
-					addParent(&N, &tempNode);
-					listAppend(&OPEN, tempNode);
+					addParent(&N, &NEW);
+					listAppend(&OPEN, NEW);
 				}
 			}
 		}
 
-
+		sendToLED(N);
+		HAL_Delay(1000);
 		/*
 		 * 7. GoTo 3
 		 */
 	}
-
-
-
 }
